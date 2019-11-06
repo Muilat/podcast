@@ -1,5 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:podcast/play_control.dart';
+import 'package:podcast/player_page.dart';
 import 'package:podcast/podcast.dart';
 import 'package:provider/provider.dart';
 
@@ -14,8 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.blueGrey,
       ),
+      debugShowCheckedModeBanner: false,
       home: MainPage(),
     );
   }
@@ -26,87 +28,54 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       builder: (_) => Podcast()..parseRss(feedUrl),
-      child: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Consumer<Podcast>(
+      child: Consumer<Podcast>(
         builder: (context, podcast, _) {
 //        print(podcast.feed);
-          return podcast.feed == null
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : ListView(
+          return Material(
+            child: Scaffold(
+              appBar:  AppBar(
+                title: Row(
+                  children: [Text("Flutter Podcast"), Icon(Icons.headset_mic)],
+                ),
+                backgroundColor: Colors.blueGrey,
+
+              ),
+              body: podcast.feed == null
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ListView(
                   children: podcast.feed.items
-                      .map(
-                        (i) => ListTile(
-                          title: Text(i.title),
-                          subtitle: Text(
-                            i.description.trim(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          onTap: () {
-                            Provider.of<Podcast>(context).selectedItem = i;
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (__) => PlayerPage(),
-                              ),
-                            );
-                          },
+                    .map(
+                      (i) => ListTile(
+                        title: Text(i.title),
+                        subtitle: Text(
+                          i.description.trim(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      )
-                      .toList(),
-                );
+                        onTap: () {
+  //                            Provider.of<Podcast>(context).selectedItem = i;
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (__) => PlayerPage(
+                                item: i,
+                                imageScr: Provider.of<Podcast>(context)
+                                    .feed
+                                    .image,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                    .toList(),
+
+                  ),
+            ),
+          );
         },
       ),
-    );
-  }
-}
-
-class PlayerPage extends StatefulWidget {
-  @override
-  _PlayerPageState createState() => _PlayerPageState();
-}
-
-class _PlayerPageState extends State<PlayerPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(Provider.of<Podcast>(context).selectedItem.title),
-      ),
-      body: Center(
-//          child: Column(
-//            mainAxisAlignment: MainAxisAlignment.center,
-//            children: [
-//              Flexible(
-//                flex: 1,
-//                child: Placeholder(),
-//              ),
-//              Flexible(
-//                flex: 0,
-//                child: Container(
-//                  color: Colors.blueGrey,
-//                  child: Column(
-//                    children: [PlayControls(),],
-//                  ),
-//                ),
-//              )
-//            ],
-//          ),
-          ),
     );
   }
 }
